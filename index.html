@@ -357,6 +357,23 @@
         // Replace this URL with your Google Apps Script Web App URL
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPOnd-OnO69WnxeMCDAz_UcM2cHsypxCRHZ0YL77neCbpyrpWqMGS2Q9VZfiqzKsitlA/exec';
 
+
+        function isValidEmail(email) {
+            // Basic email regex
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) return false;
+            // Block mailinator.com and mail-tester.com
+            const blockedDomains = [
+                'mailinator.com',
+                'mail-tester.com'
+            ];
+            const domain = email.split('@')[1]?.toLowerCase();
+            if (blockedDomains.some(bd => domain === bd || domain.endsWith('.' + bd))) {
+                return false;
+            }
+            return true;
+        }
+
         document.getElementById('waitlistForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
@@ -369,6 +386,13 @@
             // Hide previous messages
             successMessage.style.display = 'none';
             errorMessage.style.display = 'none';
+
+            // Email validation
+            if (!isValidEmail(email)) {
+                errorMessage.textContent = 'Please enter a valid email address (no mailinator.com or mail-tester.com addresses).';
+                errorMessage.style.display = 'block';
+                return;
+            }
 
             // Show loading state
             submitBtn.disabled = true;
@@ -394,6 +418,7 @@
 
             } catch (error) {
                 console.error('Error:', error);
+                errorMessage.textContent = 'Oops! Something went wrong. Please try again.';
                 errorMessage.style.display = 'block';
             } finally {
                 // Reset button state
